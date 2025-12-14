@@ -102,9 +102,15 @@ def run_experiment(config_path: str | Path) -> Path:
     base_examples = list(load_base_dataset(config.dataset.path, config.dataset.languages))
     
     # Apply limit if specified (for testing)
+    original_count = len(base_examples)
     if config.dataset.limit:
         base_examples = base_examples[:config.dataset.limit]
-        print(f"Limiting dataset to {len(base_examples)} examples (limit={config.dataset.limit})")
+        if len(base_examples) < original_count:
+            print(f"Limiting dataset to {len(base_examples)} examples (requested limit={config.dataset.limit}, dataset has {original_count})")
+        else:
+            print(f"Using all {len(base_examples)} examples from dataset (requested limit={config.dataset.limit})")
+    else:
+        print(f"Using all {len(base_examples)} examples from dataset")
     
     normalized_examples = [
         normalize_example(ex, config.dataset.allowed_labels) for ex in base_examples
@@ -189,28 +195,53 @@ def run_experiment(config_path: str | Path) -> Path:
             if config.cache.enabled:
                 save_cache(run_dir, cache_key, response)
         
-        # Parse judgment
-        judgment = parse_judgment(
-            raw_output=response.raw_output,
-            allowed_labels=config.dataset.allowed_labels,
-            run_id=run_id,
-            model=model_spec.name,
-            backend=model_spec.backend,
-            prompt_version=config.judging.prompt_version,
-            base_id=perturb.base_id,
-            perturb_id=perturb.perturb_id,
-            factor=perturb.factor,
-            level=perturb.level,
-            trial_idx=trial_idx,
-            usage=response.usage,
-            input_text=base_id_to_text.get(perturb.base_id),
-            prompt_hash=prompt_hash,
-            perturbation_text_applied=perturb.text,
-        )
-        # Add language field
-        judgment_dict = judgment.to_dict()
-        judgment_dict["language"] = perturb.language
-        judgment = Judgment(**judgment_dict)
+        # Parse judgment (unless backend returned an error)
+        if response.status == "error":
+            # Preserve backend error instead of parsing
+            judgment = Judgment(
+                run_id=run_id,
+                model=model_spec.name,
+                backend=model_spec.backend,
+                prompt_version=config.judging.prompt_version,
+                base_id=perturb.base_id,
+                perturb_id=perturb.perturb_id,
+                factor=perturb.factor,
+                level=perturb.level,
+                language=perturb.language,
+                trial_idx=trial_idx,
+                label=None,
+                confidence=None,
+                rationale=None,
+                raw_output=response.raw_output,
+                status="error",
+                error=response.error or "Backend returned error status",
+                usage=response.usage,
+                input_text=base_id_to_text.get(perturb.base_id),
+                prompt_hash=prompt_hash,
+                perturbation_text_applied=perturb.text,
+            )
+        else:
+            judgment = parse_judgment(
+                raw_output=response.raw_output,
+                allowed_labels=config.dataset.allowed_labels,
+                run_id=run_id,
+                model=model_spec.name,
+                backend=model_spec.backend,
+                prompt_version=config.judging.prompt_version,
+                base_id=perturb.base_id,
+                perturb_id=perturb.perturb_id,
+                factor=perturb.factor,
+                level=perturb.level,
+                trial_idx=trial_idx,
+                usage=response.usage,
+                input_text=base_id_to_text.get(perturb.base_id),
+                prompt_hash=prompt_hash,
+                perturbation_text_applied=perturb.text,
+            )
+            # Add language field
+            judgment_dict = judgment.to_dict()
+            judgment_dict["language"] = perturb.language
+            judgment = Judgment(**judgment_dict)
         
         return judgment.to_dict()
     

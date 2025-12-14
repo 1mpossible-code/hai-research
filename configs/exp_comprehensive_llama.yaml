@@ -3,7 +3,7 @@ dataset:
   path: data/lewidi/offensiveness.jsonl
   allowed_labels: ["offensive", "not_offensive"]
   languages: ["en", "ar", "da", "de", "el", "en", "es", "fi", "fr", "hi", "it", "nl", "no", "pl", "pt", "ru", "sv", "tr", "zh"]
-  limit: null  # Set to number for testing (e.g., 100), null for full dataset
+  limit: 2  # Set to number for testing (e.g., 100), null for full dataset
 perturbations:
   factors:
     # Control baseline
@@ -49,14 +49,14 @@ judging:
   prompt_version: "judge_v1"
   repeats: 3
   temperature: 0.0
-  max_tokens: 250
+  max_tokens: 64
   models:
-    - name: "meta-llama/Llama-3.1-8B-Instruct"
+    - name: "meta-llama/Llama-2-7b-chat-hf"  # Try with -hf suffix
       backend: "hf"
       params:
-        device: "cuda"
-        dtype: "bfloat16"
-        max_new_tokens: 250
+        device: "cpu"  # Changed from "cuda" since CUDA not available on this system
+        dtype: "float32"  # Changed from "bfloat16" (CPU doesn't support bfloat16)
+        max_new_tokens: 64
 
 metrics:
   bootstrap_samples: 200

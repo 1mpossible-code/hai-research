@@ -33,6 +33,7 @@ hf = [
     "torch>=2.0.0",
     "accelerate>=0.25.0",
     "sentencepiece>=0.1.99",
+    "protobuf>=3.20.0",  # Required for Llama tokenizers
 ]
 all = [
     "anthropic>=0.18.0",
@@ -41,6 +42,7 @@ all = [
     "torch>=2.0.0",
     "accelerate>=0.25.0",
     "sentencepiece>=0.1.99",
+    "protobuf>=3.20.0",  # Required for Llama tokenizers
 ]
 
 [project.scripts]

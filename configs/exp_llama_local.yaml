@@ -3,7 +3,7 @@ dataset:
   path: data/toy/base.jsonl
   allowed_labels: ["offensive", "not_offensive"]
   languages: ["en"]
-  limit: null  # Set to number for testing, null for full dataset
+  limit: 30  # Set to number for testing, null for full dataset
 perturbations:
   factors:
     - name: control
@@ -23,7 +23,7 @@ judging:
   prompt_version: "judge_v1"
   repeats: 3
   temperature: 0.0
-  max_tokens: 250
+  max_tokens: 64
   models:
     - name: "meta-llama/Llama-3.1-8B-Instruct"
       backend: "hf"
