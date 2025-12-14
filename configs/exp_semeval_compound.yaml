@@ -3,7 +3,7 @@ dataset:
   path: data/lewidi/offensiveness.jsonl
   allowed_labels: ["offensive", "not_offensive"]
   languages: ["en", "ar", "da", "de", "el", "en", "es", "fi", "fr", "hi", "it", "nl", "no", "pl", "pt", "ru", "sv", "tr", "zh"]
-  limit: 30  # Set to number for testing, null for full dataset
+  limit: 250  # Set to number for testing, null for full dataset
 perturbations:
   factors:
     - name: control
